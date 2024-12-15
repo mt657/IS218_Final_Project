@@ -1,7 +1,7 @@
 # operations/addition.py
 from operations.base_operation import BaseOperation
 
-class Addition(BaseOperation):
+class Add(BaseOperation):
     """
     Class for performing addition operation.
     Inherits from BaseOperation and implements calculate method.

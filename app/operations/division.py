@@ -1,7 +1,7 @@
 # operations/division.py
 from operations.base_operation import BaseOperation
 
-class Division(BaseOperation):
+class Divide(BaseOperation):
     """
     Class for performing division operation.
     Inherits from BaseOperation and implements calculate method.

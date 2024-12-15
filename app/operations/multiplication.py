@@ -1,7 +1,7 @@
 # operations/multiplication.py
 from operations.base_operation import BaseOperation
 
-class Multiplication(BaseOperation):
+class Multiply(BaseOperation):
     """
     Class for performing multiplication operation.
     Inherits from BaseOperation and implements calculate method.
