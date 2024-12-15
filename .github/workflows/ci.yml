@@ -29,7 +29,7 @@ jobs:
     - name: Run unit tests
       run: |
         source venv/bin/activate
-        pytest tests/unit/
+        pytest tests/
 
     - name: Run integration tests
       run: |
