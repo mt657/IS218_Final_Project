@@ -8,7 +8,7 @@ class BaseOperation(ABC):
     """
 
     @abstractmethod
-    def calculate(self, operand1, operand2):
+    def calculate(operand1, operand2):
         """
         Perform the operation on operand1 and operand2.
         

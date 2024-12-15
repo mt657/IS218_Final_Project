@@ -7,5 +7,5 @@ class Subtract(BaseOperation):
     Inherits from BaseOperation and implements calculate method.
     """
     
-    def calculate(self, operand1, operand2):
+    def calculate(operand1, operand2):
         return operand1 - operand2
