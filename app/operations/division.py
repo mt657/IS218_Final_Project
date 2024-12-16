@@ -1,13 +1,26 @@
-# operations/division.py
-from operations.base_operation import BaseOperation
+# app/operations/division.py
 
-class Divide(BaseOperation):
-    """
-    Class for performing division operation.
-    Inherits from BaseOperation and implements calculate method.
-    """
-    
-    def calculate(operand1, operand2):
-        if operand2 == 0:
+from app.operations import Operation
+from typing import Union
+
+class Division(Operation):
+    """Class to perform division of two numbers."""
+
+    def calculate(self, a: Union[int, float], b: Union[int, float]) -> float:
+        """
+        Divide the first number by the second.
+
+        Args:
+            a (Union[int, float]): The numerator.
+            b (Union[int, float]): The denominator.
+
+        Returns:
+            float: The result of the division.
+
+        Raises:
+            ValueError: If the denominator (b) is zero.
+        """
+        self._validate_inputs(a, b)  # Validate inputs
+        if b == 0:
             raise ValueError("Cannot divide by zero")
-        return operand1 / operand2
+        return a / b

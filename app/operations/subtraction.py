@@ -1,11 +1,21 @@
-# operations/subtraction.py
-from operations.base_operation import BaseOperation
+# app/operations/subtraction.py
 
-class Subtract(BaseOperation):
-    """
-    Class for performing subtraction operation.
-    Inherits from BaseOperation and implements calculate method.
-    """
-    
-    def calculate(operand1, operand2):
-        return operand1 - operand2
+from app.operations import Operation
+from typing import Union
+
+class Subtraction(Operation):
+    """Class to perform subtraction of two numbers."""
+
+    def calculate(self, a: Union[int, float], b: Union[int, float]) -> float:
+        """
+        Subtract the second number from the first.
+
+        Args:
+            a (Union[int, float]): The minuend.
+            b (Union[int, float]): The subtrahend.
+
+        Returns:
+            float: The difference of the two numbers.
+        """
+        self._validate_inputs(a, b)  # Validate inputs
+        return a - b

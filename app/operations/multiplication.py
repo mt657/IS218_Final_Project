@@ -1,11 +1,21 @@
-# operations/multiplication.py
-from operations.base_operation import BaseOperation
+# app/operations/multiplication.py
 
-class Multiply(BaseOperation):
-    """
-    Class for performing multiplication operation.
-    Inherits from BaseOperation and implements calculate method.
-    """
-    
-    def calculate(operand1, operand2):
-        return operand1 * operand2
+from app.operations import Operation
+from typing import Union
+
+class Multiplication(Operation):
+    """Class to perform multiplication of two numbers."""
+
+    def calculate(self, a: Union[int, float], b: Union[int, float]) -> float:
+        """
+        Multiply two numbers.
+
+        Args:
+            a (Union[int, float]): The first number.
+            b (Union[int, float]): The second number.
+
+        Returns:
+            float: The product of the two numbers.
+        """
+        self._validate_inputs(a, b)  # Validate inputs
+        return a * b
