@@ -11,6 +11,7 @@ pluggy==1.5.0
 pyee==12.0.0
 pytest==8.3.4
 pytest-cov==6.0.0
+pytest-dotenv==0.5.2
 python-dotenv==1.0.1
 requests==2.32.3
 tomli==2.2.1
