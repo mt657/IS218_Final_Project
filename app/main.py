@@ -1,58 +1,68 @@
-# main.py
+# Import necessary modules from FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware  # Import CORSMiddleware
+from app.operations.addition import Addition
+from app.operations.subtraction import Subtraction
+from app.operations.multiplication import Multiplication
+from app.operations.division import Division
+from pathlib import Path
 
-from dotenv import load_dotenv
-import os
-import requests
-import logging
-from log_setup import setup_logging
+# Create FastAPI instance
+app = FastAPI()
 
-# Load environment variables from the .env file
-load_dotenv()
+# Allow CORS for all origins or configure it as needed
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # You can restrict this to specific domains if needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, OPTIONS, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
-# Setup logging
-setup_logging()
+# Serve static files (like CSS)
+# Updated the directory path to correctly reference the static folder inside the app folder
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
-# Get the API key from environment variables
-groq_api_key = os.getenv("GROQ_API_KEY")
+# Define the input data schema for validation using Pydantic
+class CalculationRequest(BaseModel):
+    operand1: float
+    operand2: float
+    operation: str
 
-# Create logger
-logger = logging.getLogger(__name__)
+# Route to serve the index page
+@app.get("/", response_class=HTMLResponse)
+async def index():
+    # Updated the path to the templates folder inside the app folder
+    template_path = Path(__file__).parent / "templates" / "index.html"
+    with open(template_path) as f:
+        return HTMLResponse(content=f.read(), status_code=200)
 
-# Check if the API key is loaded properly
-if not groq_api_key:
-    logger.error("GROQ_API_KEY is not set in the .env file")
-else:
-    logger.info("API Key Loaded Successfully")
+# Route to handle the calculation (POST request)
+@app.post("/", response_model=dict)
+async def calculate(request: CalculationRequest):
+    operand1 = request.operand1
+    operand2 = request.operand2
+    operation = request.operation
 
-# Example function to call Groq's API with the API key
-def call_groq_math_function(operation, *args):
-    """
-    Function to call the Groq API to perform a math operation.
-    """
-    logger.info(f"Calling Groq API for operation: {operation} with arguments: {args}")
-    
-    url = "https://api.groq.com/math"  # Example URL for the math API
-    headers = {"Authorization": f"Bearer {groq_api_key}"}
-
-    # Example payload (adjust according to your actual API)
-    data = {
-        "operation": operation,
-        "args": args
-    }
-
+    # Perform the appropriate operation
     try:
-        response = requests.post(url, json=data, headers=headers)
-        
-        # Check if the API call was successful
-        if response.status_code == 200:
-            result = response.json()
-            logger.info(f"API call successful. Result: {result}")
+        if operation == "Add":
+            result = Addition().calculate(operand1, operand2)
+        elif operation == "Subtract":
+            result = Subtraction().calculate(operand1, operand2)
+        elif operation == "Multiply":
+            result = Multiplication().calculate(operand1, operand2)
+        elif operation == "Divide":
+            if operand2 == 0:
+                raise HTTPException(status_code=400, detail="Cannot divide by zero")
+            result = Division().calculate(operand1, operand2)
         else:
-            logger.error(f"Failed to call API. Status code: {response.status_code}, Response: {response.text}")
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Error occurred while calling the API: {e}")
+            raise HTTPException(status_code=400, detail="Invalid operation")
 
-# Example usage
-if __name__ == "__main__":
-    # Example: calling a math function 'add' with two numbers
-    call_groq_math_function("add", 5, 3)
+        return {"result": result}
+
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid input")
