@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator</title>
+    <link rel="stylesheet" href="../static/styles.css"> <!-- Link to the external CSS file -->
+</head>
+<body>
+    <button id="dark-mode-toggle">Dark Mode</button>
+
+    <div class="welcome-message">
+        <h1>Welcome to the Calculator!</h1>
+    </div>
+
+    <div class="container">
+        <input type="number" id="operand1" placeholder="Enter first value">
+        <input type="number" id="operand2" placeholder="Enter second value">
+        <select id="operation">
+            <option value="Add">Add</option>
+            <option value="Subtract">Subtract</option>
+            <option value="Multiply">Multiply</option>
+            <option value="Divide">Divide</option>
+        </select>
+        <button id="calculate-btn">Calculate</button>
+
+        <div id="result-container">
+            <h4>Result:</h4>
+            <p id="result"></p>
+        </div>
+
+        <div id="error-container">
+            <p id="error"></p>
+        </div>
+    </div>
+
+    <script>
+        // Toggle dark mode
+        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
+            document.body.classList.toggle('dark-mode');
+        });
+
+        // Handle the calculate button click
+        document.getElementById('calculate-btn').addEventListener('click', async function() {
+            const operand1 = document.getElementById('operand1').value;
+            const operand2 = document.getElementById('operand2').value;
+            const operation = document.getElementById('operation').value;
+
+            try {
+                // Send data to the Flask backend via a POST request
+                const response = await fetch('http://127.0.0.1:8000/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        operand1: operand1,
+                        operand2: operand2,
+                        operation: operation,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Display the result
+                    document.getElementById('result').textContent = `${operand1} ${operation} ${operand2} = ${data.result}`;
+                    document.getElementById('error').textContent = '';
+                    document.getElementById('result-container').style.display = 'block';
+                } else {
+                    // Display error message from the server
+                    document.getElementById('error').textContent = data.error;
+                    document.getElementById('result-container').style.display = 'none';
+                }
+            } catch (error) {
+                // Handle network or other errors
+                document.getElementById('error').textContent = 'An error occurred while processing your request.';
+                document.getElementById('result-container').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
