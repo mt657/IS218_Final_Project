@@ -1,18 +1,20 @@
-# Use an official Python image
+# Start from a base Python image with version 3.10
 FROM python:3.10-slim
 
 # Set the working directory
 WORKDIR /app
 
+# Copy the current directory contents into the container
+COPY . /app
+
+# Set the Python path to /app
+ENV PYTHONPATH="/app"
+
 # Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
-# Copy the project
-COPY . .
-
-# Expose the app on port 8000 (adjust based on your framework)
+# Expose the application port
 EXPOSE 8000
 
-# Run the application
-CMD ["python", "-m", "app.main"]
+# Command to start the app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
