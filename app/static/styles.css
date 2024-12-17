@@ -1,0 +1,173 @@
+/* General styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    padding-top: 50px;
+}
+
+/* Dark Mode Styling */
+body.dark-mode {
+    background-color: #333;
+}
+
+/* Styling for the welcome message */
+.welcome-message {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+}
+
+body.dark-mode .welcome-message h1 {
+    color: #fff;
+}
+
+/* Dark Mode Toggle Button */
+#dark-mode-toggle {
+    position: absolute;
+    top: 20px;
+    right: 25px; /* Moved 5px more to the left */
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    width: auto;
+    transition: background-color 0.3s ease;
+}
+
+#dark-mode-toggle:hover {
+    background-color: #45a049;
+}
+
+/* Calculator Container (fixed size) */
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    height: 400px;
+    margin-top: 30px;
+    overflow: hidden;
+}
+
+/* Style for the Input Fields & Buttons */
+input, select, button {
+    width: 100%; /* Make sure all elements use full width */
+    margin: 10px 0;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-sizing: border-box; /* Include padding in width calculation */
+}
+
+/* Style for the Result Section */
+#result-container {
+    display: none;
+    margin-top: 10px; /* Reduced padding to align better */
+    text-align: center;
+}
+
+/* Make the result text a reasonable size */
+#result {
+    font-size: 20px; /* Set the size of the result text */
+    font-weight: normal; /* Don't make the result bold */
+    color: #000; /* Set the result text color to black */
+}
+
+/* Ensure the "Result:" label stays centered and appropriately sized */
+#result-container h4 {
+    font-size: 22px;  /* Slightly larger than the result text */
+    font-weight: bold; /* Make it bold */
+    color: #000; /* Set the color to black */
+    text-align: center;
+}
+
+/* Error Message Section */
+#error-container {
+    margin-top: 10px;
+    color: red;
+    text-align: center;
+}
+
+/* Button for calculating */
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Prevent dark mode from affecting the result text */
+body.dark-mode #result,
+body.dark-mode #result-container label {
+    color: #000 !important;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+    .container {
+        width: 300px;
+        height: 400px;
+    }
+
+    #dark-mode-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 14px;
+    }
+
+    .welcome-message {
+        font-size: 20px;
+        margin-top: 30px;
+    }
+
+    input, select, button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        width: 300px;
+        height: 400px;
+    }
+
+    #dark-mode-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+
+    .welcome-message {
+        font-size: 18px;
+        margin-top: 20px;
+    }
+
+    input, select, button {
+        font-size: 12px;
+        padding: 6px;
+    }
+}
