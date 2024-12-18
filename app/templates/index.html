@@ -48,7 +48,7 @@
 
             try {
                 // Send data to the Flask backend via a POST request
-                const response = await fetch('http://127.0.0.1:8000/', {
+                const response = await fetch('http://localhost:8000/', {  // Change localhost to fastapi
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
