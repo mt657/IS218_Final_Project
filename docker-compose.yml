@@ -1,41 +1,58 @@
 services:
-  fastapi:
-    build: .
+  fastapi_calculator:
+    build: .  # This will build the image from the Dockerfile in the current directory
     container_name: fastapi_calculator
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:password@postgres:5432/calculator_db
     ports:
       - "8000:8000"
-    volumes:
-      - .:/app
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
     environment:
-      - PYTHONPATH=/app
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: calculator_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 10s
 
-  # PostgreSQL service
-  # postgres:
-  #   image: postgres:13
-  #   container_name: postgres
-  #   ports:
-  #     - "5432:5432"  # Expose PostgreSQL on port 5432
-  #   environment:
-  #     - POSTGRES_USER=postgres
-  #     - POSTGRES_PASSWORD=password
-  #     - POSTGRES_DB=calculator_db  # Create a calculator_db database
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data  # Persistent storage for PostgreSQL data
-  #   restart: always
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"  # Map port 5050 on the host to port 80 in the pgAdmin container
+    networks:
+      - app-network
+    depends_on:
+      - postgres
 
-  # # pgAdmin service
-  # pgadmin:
-  #   image: dpage/pgadmin4
-  #   container_name: pgadmin
-  #   ports:
-  #     - "8080:80"  # Expose pgAdmin on port 8080
-  #   environment:
-  #     - PGADMIN_DEFAULT_EMAIL=admin@admin.com  # Default admin email for pgAdmin
-  #     - PGADMIN_DEFAULT_PASSWORD=admin  # Default admin password for pgAdmin
-  #   depends_on:
-  #     - postgres
-  #   restart: always
+networks:
+  app-network:
+    driver: bridge
 
-# volumes:
-#   postgres_data:
-#     driver: local
+volumes:
+  postgres_data:
+    driver: local
