@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import NoResultFound
 from pathlib import Path
 
 from app.operations.addition import Addition
@@ -13,7 +14,7 @@ from app.operations.division import Division
 from app.models.calculation_history import CalculationHistory
 from database import SessionLocal, engine, Base
 
-# Create tables in the database (ensure it happens at app startup)
+# Create tables in the database
 Base.metadata.create_all(bind=engine)
 
 # Create FastAPI instance
@@ -72,7 +73,6 @@ async def calculate(request: CalculationRequest, db: Session = Depends(get_db)):
     operand2 = request.operand2
     operation = request.operation
 
-    # Operation mapping
     operations = {
         "Add": Addition(),
         "Subtract": Subtraction(),
@@ -86,10 +86,8 @@ async def calculate(request: CalculationRequest, db: Session = Depends(get_db)):
     if operation == "Divide" and operand2 == 0:
         raise HTTPException(status_code=400, detail="Cannot divide by zero")
     
-    # Perform the calculation
     result = operations[operation].calculate(operand1, operand2)
 
-    # Save to the database
     calculation = CalculationHistory(
         operation=operation,
         operand1=operand1,
@@ -105,5 +103,21 @@ async def calculate(request: CalculationRequest, db: Session = Depends(get_db)):
 # Retrieve the calculation history
 @app.get("/history", response_model=list[CalculationHistoryResponse])
 async def get_history(db: Session = Depends(get_db)):
-    history = db.query(CalculationHistory).all()
-    return history
+    return db.query(CalculationHistory).all()
+
+# Clear calculation history
+@app.delete("/history")
+async def clear_history(db: Session = Depends(get_db)):
+    db.query(CalculationHistory).delete()
+    db.commit()
+    return {"message": "Calculation history cleared."}
+
+# Undo the last calculation
+@app.delete("/history/undo")
+async def undo_last_calculation(db: Session = Depends(get_db)):
+    last_calculation = db.query(CalculationHistory).order_by(CalculationHistory.id.desc()).first()
+    if not last_calculation:
+        raise HTTPException(status_code=404, detail="No calculations to undo.")
+    db.delete(last_calculation)
+    db.commit()
+    return {"message": "Last calculation undone."}
