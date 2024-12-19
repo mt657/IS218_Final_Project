@@ -4,80 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
-    <link rel="stylesheet" href="./static/styles.css"> <!-- Link to the external CSS file -->
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <button id="dark-mode-toggle">Dark Mode</button>
+    <h1>Welcome to the Calculator</h1>
 
-    <div class="welcome-message">
-        <h1>Welcome to the Calculator!</h1>
-    </div>
+    <!-- Dark Mode Button -->
+    <button id="dark-mode-btn">Dark Mode</button>
 
-    <div class="container">
-        <input type="number" id="operand1" placeholder="Enter first value">
-        <input type="number" id="operand2" placeholder="Enter second value">
-        <select id="operation">
-            <option value="Add">Add</option>
-            <option value="Subtract">Subtract</option>
-            <option value="Multiply">Multiply</option>
-            <option value="Divide">Divide</option>
-        </select>
-        <button id="calculate-btn">Calculate</button>
+    <!-- Main wrapper to ensure consistent stacking -->
+    <div class="main-wrapper">
+        <!-- Calculator container (center) -->
+        <div class="container">
+            <form id="calculator-form">
+                <input type="number" id="operand1" placeholder="Operand 1" required>
+                <select id="operation" required>
+                    <option value="Add">+</option>
+                    <option value="Subtract">-</option>
+                    <option value="Multiply">x</option>
+                    <option value="Divide">/</option>
+                </select>
+                <input type="number" id="operand2" placeholder="Operand 2" required>
+                <button type="submit">Calculate</button>
+            </form>
 
-        <div id="result-container">
-            <h4>Result:</h4>
-            <p id="result"></p>
+            <div id="result" class="result"></div> <!-- Calculation result -->
         </div>
 
-        <div id="error-container">
-            <p id="error"></p>
+        <!-- Calculation history section -->
+        <div class="history-container">
+            <h2>Calculation History</h2>
+            <!-- History box that will contain calculations -->
+            <div class="history-box">
+                <ul id="history" class="history"></ul>
+            </div>
+
+            <!-- Undo and Clear buttons at the bottom -->
+            <div class="buttons-bottom">
+                <button id="clear-history-btn">Clear History</button>
+                <button id="undo-btn">Undo Last Calculation</button>
+            </div>
         </div>
     </div>
 
     <script>
-        // Toggle dark mode
-        document.getElementById('dark-mode-toggle').addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
+        document.getElementById("calculator-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const operand1 = parseFloat(document.getElementById("operand1").value);
+            const operand2 = parseFloat(document.getElementById("operand2").value);
+            const operation = document.getElementById("operation").value;
+
+            const response = await fetch("/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    operand1,
+                    operand2,
+                    operation,
+                }),
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = `Result = ${data.result}`;
+
+            // Fetch and display history after calculation
+            updateHistory();
         });
 
-        // Handle the calculate button click
-        document.getElementById('calculate-btn').addEventListener('click', async function() {
-            const operand1 = document.getElementById('operand1').value;
-            const operand2 = document.getElementById('operand2').value;
-            const operation = document.getElementById('operation').value;
+        // Update calculation history
+        async function updateHistory() {
+            const response = await fetch("/history");
+            const history = await response.json();
 
-            try {
-                // Send data to the Flask backend via a POST request
-                const response = await fetch('http://localhost:8000/', {  // Change localhost to fastapi
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        operand1: operand1,
-                        operand2: operand2,
-                        operation: operation,
-                    }),
-                });
+            const historyList = document.getElementById("history");
 
-                const data = await response.json();
+            historyList.innerHTML = ""; // Clear current history
+            history.forEach(item => {
+                // Replace operation names with corresponding symbols
+                const operationSymbols = {
+                    'Add': '+',
+                    'Subtract': '-',
+                    'Multiply': 'x',
+                    'Divide': '/'
+                };
 
-                if (response.ok) {
-                    // Display the result
-                    document.getElementById('result').textContent = `${operand1} ${operation} ${operand2} = ${data.result}`;
-                    document.getElementById('error').textContent = '';
-                    document.getElementById('result-container').style.display = 'block';
-                } else {
-                    // Display error message from the server
-                    document.getElementById('error').textContent = data.error;
-                    document.getElementById('result-container').style.display = 'none';
-                }
-            } catch (error) {
-                // Handle network or other errors
-                document.getElementById('error').textContent = 'An error occurred while processing your request.';
-                document.getElementById('result-container').style.display = 'none';
+                const operationSymbol = operationSymbols[item.operation];
+
+                const li = document.createElement("li");
+                li.textContent = `${item.operand1} ${operationSymbol} ${item.operand2} = ${item.result}`;
+                historyList.appendChild(li);
+            });
+
+            // Show the history container when there is history
+            const historyContainer = document.querySelector(".history-container");
+            if (history.length > 0) {
+                historyContainer.style.display = "block";  // Show history
             }
+        }
+
+        // Clear history
+        document.getElementById("clear-history-btn").addEventListener("click", async function() {
+            await fetch("/history", { method: "DELETE" });
+            updateHistory(); // Refresh the history after clearing it
         });
+
+        // Undo the last calculation
+        document.getElementById("undo-btn").addEventListener("click", async function() {
+            await fetch("/history/undo", { method: "DELETE" });
+            updateHistory(); // Refresh the history after undo
+        });
+
+        // Dark Mode Toggle
+        document.getElementById("dark-mode-btn").addEventListener("click", function() {
+            document.body.classList.toggle("dark-mode");
+        });
+
+        // Initialize the page by fetching history
+        updateHistory();
     </script>
 </body>
 </html>
